@@ -2,7 +2,7 @@
   <MainHeader />
   <div class="container">
     <MainBalance :actualTotal="+actualTotal" :projectedTotal="+projectedTotal" @currencyChanged="handleCurrencyChange" />
-    <IncomeExpenses :income="+income" :expenses="+expenses" :currency="currency" />
+    <IncomeExpenses :actualIncome="+actualIncome" :projectedIncome="+projectedIncome" :actualExpenses="+actualExpenses" :projectedExpenses="+projectedExpenses" :currency="currency" />
     <TransactionList :transactions="transactions" :currency="currency" @transactionDeleted="handleTransactionDeleted"
       @transactionEdited="handleTransactionEdited" />
     <AddTransaction @transactionSubmitted="handleTransactionSubmitted" />
@@ -70,18 +70,36 @@ const projectedTotal = computed(() => {
   );
 })
 
-// Get income
-const income = computed(() => {
-  return transactions.value.filter((transaction) => transaction.actualCost > 0).reduce(
-    (acc, transaction) => acc + transaction.actualCost,
-    0).toFixed(2);
+// Get actual income
+const actualIncome = computed(() => {
+  return transactions.value
+    .filter((transaction) => transaction.actualCost > 0)
+    .reduce((acc, transaction) => acc + transaction.actualCost, 0)
+    .toFixed(2);
 });
 
-// Get expenses
-const expenses = computed(() => {
-  return transactions.value.filter((transaction) => transaction.actualCost < 0).reduce(
-    (acc, transaction) => acc + transaction.actualCost,
-    0).toFixed(2);
+// Get projected income
+const projectedIncome = computed(() => {
+  return transactions.value
+    .filter((transaction) => transaction.projectedCost > 0)
+    .reduce((acc, transaction) => acc + transaction.projectedCost, 0)
+    .toFixed(2);
+});
+
+// Get actual expenses
+const actualExpenses = computed(() => {
+  return transactions.value
+    .filter((transaction) => transaction.actualCost < 0)
+    .reduce((acc, transaction) => acc + transaction.actualCost, 0)
+    .toFixed(2);
+});
+
+// Get projected expenses
+const projectedExpenses = computed(() => {
+  return transactions.value
+    .filter((transaction) => transaction.projectedCost < 0)
+    .reduce((acc, transaction) => acc + transaction.projectedCost, 0)
+    .toFixed(2);
 });
 
 // Handle transaction submitted
@@ -111,11 +129,6 @@ const handleTransactionEdited = (transactionData) => {
   saveToLocalStorage();
   // console.log(JSON.stringify(transactions.value))
 }
-
-// Helped function for generating unique id
-// const generateUniqueId = () => {
-//   return Math.floor(Math.random() * 1000000)
-// }
 
 // Handle transaction deletion
 const handleTransactionDeleted = (id) => {

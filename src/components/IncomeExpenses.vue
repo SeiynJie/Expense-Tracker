@@ -1,31 +1,50 @@
 <template>
   <div class="inc-exp-container">
     <div>
-      <h4>Income</h4>
-      <p class="money plus">+{{currency}}{{income}}</p>
+      <h4>Projected Income</h4>
+      <p class="money plus">+{{ currency }}{{ formatNumber(projectedIncome) }}</p>
     </div>
     <div>
-      <h4>Expenses</h4>
-      <p class="money minus">{{currency}}{{expenses}}</p>
+      <h4>P. Expenses</h4>
+      <p class="money minus">{{ currency }}{{ formatNumber(projectedExpenses) }}</p>
+    </div>
+    <div>
+      <h4>Actual Income</h4>
+      <p class="money plus">+{{ currency }}{{ formatNumber(actualIncome) }}</p>
+    </div>
+    <div>
+      <h4>A. Expenses</h4>
+      <p class="money minus">{{ currency }}{{ formatNumber(actualExpenses) }}</p>
     </div>
   </div>
 </template>
 
 <script setup>
-import { defineProps } from "vue";
+// Format numbers with commas
+const formatNumber = (num) => {
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
 
 defineProps({
-    income: {
-        type: Number,
-        required: true,
-    },
-    expenses: {
-        type: Number,
-        required: true,
-    },
-    currency: {
-        type: String,
-        required: true,
-    },
-})
+  actualIncome: {
+    type: Number,
+    required: true,
+  },
+  projectedIncome: {
+    type: Number,
+    required: true,
+  },
+  actualExpenses: {
+    type: Number,
+    required: true,
+  },
+  projectedExpenses: {
+    type: Number,
+    required: true,
+  },
+  currency: {
+    type: String,
+    required: true,
+  },
+});
 </script>

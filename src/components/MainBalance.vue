@@ -9,13 +9,13 @@
         <div class="projectedBalance">
             <h4>Projected Balance</h4>
             <h1 id="projectedBalance">
-                {{ projectedTotal }}
+                {{ formatNumber(projectedTotal) }}
             </h1>
         </div>
         <div class="actualBalance">
             <h4>Actual balance</h4>
             <h1 id="actualBalance">
-                {{ actualTotal }}
+                {{ formatNumber(actualTotal) }}
             </h1>
         </div>
     </div>
@@ -35,6 +35,11 @@ defineProps({
         required: true,
     },
 });
+
+// Format numbers with commas
+const formatNumber = (num) => {
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
 
 // Ref for selected currency symbol (default to PHP)
 let selectedCurrency = ref('');
