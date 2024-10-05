@@ -1,14 +1,42 @@
 <template>
   <h3>History</h3>
+  <div>
+    <label>Transaction name</label>
+    <label>Projected Cost</label>
+    <label>Actual Cost</label>
+  </div>
+  
   <ul id="list" class="list">
-    <!-- Just having this loop through the transactions array and then display the values. The vbindclass is for assigning the class to the li element. Since in CSS, we have a class for the plus and minus. -->
     <li
-      v-for="transaction in transactions"
-      v-bind:key="transaction.id"
-      v-bind:class="transaction.amount < 0 ? 'minus' : 'plus'"
+    v-for="transaction in transactions"
+    v-bind:key="transaction.id"
+    v-bind:class="transaction.actualCost < 0 ? 'minus' : 'plus'"
     >
-      {{ transaction.text }}<span>₱{{ transaction.amount }}</span
-      ><button @click="deleteTransaction(transaction.id)" class="delete-btn">x</button>
+      <span class="items">
+        <!-- Transaction text and amount are editable by default -->
+        <input
+          v-model="transaction.text"
+          @blur="saveTransaction(transaction)"
+          @keyup.enter="saveTransaction(transaction)"
+          type="text"
+          placeholder="Edit transaction text"
+        />
+        <input
+          v-model="transaction.projectedCost"
+          @blur="saveTransaction(transaction)"
+          @keyup.enter="saveTransaction(transaction)"
+          type="number"
+          placeholder="Edit amount"
+        />
+        <input
+          v-model="transaction.actualCost"
+          @blur="saveTransaction(transaction)"
+          @keyup.enter="saveTransaction(transaction)"
+          type="number"
+          placeholder="Edit amount"
+        />
+      </span>
+      <button @click="deleteTransaction(transaction.id)" class="delete-btn">x</button>
     </li>
   </ul>
 </template>
@@ -16,55 +44,59 @@
 <script setup>
 import { defineProps } from "vue";
 
+// Define props for transactions and currency
 defineProps({
   transactions: {
     type: Array,
     required: true,
   },
+  currency: {
+    type: String,
+    required: true,
+  },
 });
 
-const emit = defineEmits(['transactionDeleted'])
+// Emit events
+const emit = defineEmits(['transactionDeleted', 'transactionEdited']);
+
+// Function to delete a transaction
 const deleteTransaction = (id) => {
-  emit('transactionDeleted', id)
-}
-</script>
-
-<!-- <script setup>
-// This is the shortest and newest syntax but we'll use the transactions in the app.vue instead
-const transactions = [
-    { id: 1, text: "Flower", amount: -20 },
-    { id: 2, text: "Salary", amount: 300 },
-    { id: 3, text: "Book", amount: -10 },
-    { id: 4, text: "Camera", amount: 150 },
-]
-</script> -->
-
-<!-- 
-<script>
-// Another way of doing it:
-export default {
-  setup() {
-    const transactions = [
-      { id: 1, text: "Flower", amount: -20 },
-      { id: 2, text: "Salary", amount: 300 },
-      { id: 3, text: "Book", amount: -10 },
-      { id: 4, text: "Camera", amount: 150 },
-    ];
-    return { transactions };
-  },
+  emit('transactionDeleted', id);
 };
 
-// Old syntax
-// export default {
-//     data () {
-//         return {
-//             transactions: [
-//                 {id: 1, text: 'Flower', amount: -20},
-//                 {id: 2, text: 'Salary', amount: 300},
-//                 {id: 3, text: 'Book', amount: -10},
-//                 {id: 4, text: 'Camera', amount: 150}
-//             ],
-//         };
-//     },
-// }
-</script> -->
+// Function to save a transaction after editing
+const saveTransaction = (transaction) => {
+  emit('transactionEdited', transaction)
+  // Here you can perform additional validation or save logic if needed
+};
+</script>
+
+<style scoped>
+div {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+div label {
+  text-align: center;
+  width: 75%;
+  padding: 0;
+  margin: 0
+}
+
+span {
+  display: flex;
+  justify-content: space-between; /* Changed to space-between for better alignment */
+  align-items: center;
+  width: 100%;
+}
+
+/* Style for input fields */
+input {
+  margin-right: 10px;
+  text-align: center;
+  font-family: 'Lato', sans-serif;
+  font-size: 18px;
+  flex: 1; /* Make inputs fill available space */
+}
+</style>

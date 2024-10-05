@@ -2,11 +2,11 @@
   <div class="inc-exp-container">
     <div>
       <h4>Income</h4>
-      <p class="money plus">+₱{{income}}</p>
+      <p class="money plus">+{{currency}}{{income}}</p>
     </div>
     <div>
       <h4>Expenses</h4>
-      <p class="money minus">₱{{expenses}}</p>
+      <p class="money minus">{{currency}}{{expenses}}</p>
     </div>
   </div>
 </template>
@@ -22,6 +22,10 @@ defineProps({
     expenses: {
         type: Number,
         required: true,
-    }
+    },
+    currency: {
+        type: String,
+        required: true,
+    },
 })
 </script>

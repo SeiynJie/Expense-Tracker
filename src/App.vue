@@ -1,17 +1,17 @@
 <template>
   <MainHeader />
   <div class="container">
-    <MainBalance :total="+total" />
-    <IncomeExpenses :income="+income" :expenses="+expenses" />
-    <TransactionList :transactions="transactions" @transactionDeleted="handleTransactionDeleted" />
+    <MainBalance :total="+total" @currencyChanged="handleCurrencyChange"/>
+    <IncomeExpenses :income="+income" :expenses="+expenses" :currency="currency" />
+    <TransactionList :transactions="transactions" :currency="currency" @transactionDeleted="handleTransactionDeleted" @transactionEdited="handleTransactionEdited" />
     <AddTransaction @transactionSubmitted="handleTransactionSubmitted" />
   </div>
 </template>
 
 <script setup>
 // Main components
-import MainBalance from "./components/MainBalance.vue";
 import MainHeader from "./components/MainHeader.vue";
+import MainBalance from "./components/MainBalance.vue";
 import IncomeExpenses from "./components/IncomeExpenses.vue";
 import TransactionList from "./components/TransactionList.vue";
 import AddTransaction from "./components/AddTransaction.vue";
@@ -29,31 +29,50 @@ const transactions = ref([]);
 // Load saved data
 onMounted(() => {
   const savedTransactions = JSON.parse(localStorage.getItem('transactions'))
+  const savedCurrency = localStorage.getItem('currency')
+  if (savedCurrency) {
+    currency.value = savedCurrency
+  }
 
   if (savedTransactions) {
     transactions.value = savedTransactions
   } 
 })
 
+let currency = ref(''); // Replace this with the selected currency symbol
+
+// Handle currency change
+const handleCurrencyChange = (newCurrency) => {
+  if (!newCurrency){
+    toast.error('Please enter a currency symbol')
+    return
+  }
+
+  // Make new currency a string
+  currency.value = newCurrency;
+  console.log(`Currency changed to ${currency.value}`)
+  saveToLocalStorage()
+};
+
 // Get total
 const total = computed(() => {
   return transactions.value.reduce(
-    (acc, transaction) => acc + transaction.amount,
+    (acc, transaction) => acc + transaction.actualCost,
     0
   );
 });
 
 // Get income
 const income = computed(() => {
-  return transactions.value.filter((transaction) => transaction.amount > 0).reduce(
-    (acc, transaction) => acc + transaction.amount,
+  return transactions.value.filter((transaction) => transaction.actualCost > 0).reduce(
+    (acc, transaction) => acc + transaction.actualCost,
     0).toFixed(2);
 });
 
 // Get expenses
 const expenses = computed(() => {
-  return transactions.value.filter((transaction) => transaction.amount < 0).reduce(
-    (acc, transaction) => acc + transaction.amount,
+  return transactions.value.filter((transaction) => transaction.actualCost < 0).reduce(
+    (acc, transaction) => acc + transaction.actualCost,
     0).toFixed(2);
 });
 
@@ -63,13 +82,19 @@ const handleTransactionSubmitted = (transactionData) => {
   transactions.value.push({
     id: generateUniqueId(),
     text: transactionData.text,
-    amount: transactionData.amount
+    projectedCost: transactionData.projectedCost,
+    actualCost: transactionData.actualCost,
   });
 
   saveToLocalStorage()
-  toast.success('Transaction added')
+  toast.success('Transaction added', {timeout: 2000})
 }
 
+// Handle transaction edited
+const handleTransactionEdited = (transactionData) => {
+  // Find the transaction to edit
+saveToLocalStorage()  
+}
 // Helped function for generating unique id
 const generateUniqueId = () => {
   return Math.floor(Math.random() * 1000000)
@@ -80,12 +105,13 @@ const handleTransactionDeleted = (id) => {
   transactions.value = transactions.value.filter((transaction) => transaction.id !== id)
 
   saveToLocalStorage()
-  toast.success('Transaction deleted')
+  toast.success('Transaction deleted', {timeout: 2000})
 }
 
 // Save to local storage
 const saveToLocalStorage = () => {
   localStorage.setItem('transactions', JSON.stringify(transactions.value))
+  localStorage.setItem('currency', currency.value)
 }
 
 </script>

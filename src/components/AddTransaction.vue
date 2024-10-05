@@ -1,16 +1,17 @@
 <template>
-    <h3>Add new transactions</h3>
+    <!-- <h3>Add new transactions</h3> -->
     <form id="form" @submit.prevent="onSubmit">
-        <div class="form-control">
-            <label for="text">Text</label>
+        <!-- <div class="form-control">
+            <label for="text">Transaction name</label>
             <input type="text" id="text" v-model="text" placeholder="Enter text..." />
         </div>
         <div class="form-control">
-            <label for="amount">Amount (negative - expense, positive - income)</label>
+            <label for="amount">Amount</label>
             <input type="text" id="amount" v-model="amount" placeholder="Enter amount..." />
-        </div>
+        </div> -->
         <button class="btn">Add transaction</button>
     </form>
+
 </template>
 
 <script setup>
@@ -24,10 +25,10 @@
 
     const toast = useToast();
     const onSubmit = () => {
-        if (!text.value || !amount.value) {
-            toast.error("Both fields must be filled")
-            return;
-        }
+        // if (!text.value || !amount.value) {
+        //     toast.error("Both fields must be filled")
+        //     return;
+        // }
 
         // console.log(text.value, amount.value);
         const transactionData = {
@@ -41,3 +42,16 @@
         amount.value = "";
     }
 </script>
+
+<style scoped>
+label {
+    display: flex;
+    margin-left: 5px;
+}
+
+form {
+    display: flex;
+    justify-content: space-between;
+}
+
+</style>
