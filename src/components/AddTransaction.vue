@@ -19,7 +19,8 @@
     import { useToast } from "vue-toastification";
 
     const text = ref("");
-    const amount = ref("");
+    const projectedCost = ref("0");
+    const actualCost = ref("0");
 
     const emit = defineEmits(['transactionSubmitted'])
 
@@ -32,14 +33,17 @@
 
         // console.log(text.value, amount.value);
         const transactionData = {
+            id: Math.floor(Math.random() * 1000000),
             text: text.value,
-            amount: parseFloat(amount.value)
+            projectedCost: parseFloat(projectedCost.value),
+            actualCost: parseFloat(actualCost.value)
         }
 
         emit('transactionSubmitted', transactionData)
 
         text.value = "";
-        amount.value = "";
+        projectedCost.value = "0";
+        actualCost.value = "0";
     }
 </script>
 

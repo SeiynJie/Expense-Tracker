@@ -1,13 +1,23 @@
 <template>
-    <h4>Your Balance</h4>
-    <div class="balanceDiv">
-        <!-- Input field for entering the currency symbol -->
-        <input v-model="selectedCurrency" class="currency-input" @input="handleCurrencyChange"
-            placeholder="_" maxlength="3" 
-        />
-        <h1 id="balance">
-            {{ total }}
-        </h1>
+    <div class="overallBalance">
+        <div class="balanceDiv">
+            <h4>Your Balance</h4>
+            <!-- Input field for entering the currency symbol -->
+            <input v-model="selectedCurrency" class="currency-input" @input="handleCurrencyChange" placeholder="_"
+                maxlength="3" />
+        </div>
+        <div class="projectedBalance">
+            <h4>Projected Balance</h4>
+            <h1 id="projectedBalance">
+                {{ projectedTotal }}
+            </h1>
+        </div>
+        <div class="actualBalance">
+            <h4>Actual balance</h4>
+            <h1 id="actualBalance">
+                {{ actualTotal }}
+            </h1>
+        </div>
     </div>
 </template>
 
@@ -16,7 +26,11 @@ import { ref, defineProps, defineEmits } from 'vue';
 
 // Define props for the total amount
 defineProps({
-    total: {
+    actualTotal: {
+        type: Number,
+        required: true,
+    },
+    projectedTotal: {
         type: Number,
         required: true,
     },
@@ -36,11 +50,10 @@ const handleCurrencyChange = () => {
 </script>
 
 <style scoped>
-.balanceDiv {
+.overallBalance {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    /* Align items vertically center */
 }
 
 /* Style for the input field */

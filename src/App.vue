@@ -1,9 +1,10 @@
 <template>
   <MainHeader />
   <div class="container">
-    <MainBalance :total="+total" @currencyChanged="handleCurrencyChange"/>
+    <MainBalance :actualTotal="+actualTotal" :projectedTotal="+projectedTotal" @currencyChanged="handleCurrencyChange" />
     <IncomeExpenses :income="+income" :expenses="+expenses" :currency="currency" />
-    <TransactionList :transactions="transactions" :currency="currency" @transactionDeleted="handleTransactionDeleted" @transactionEdited="handleTransactionEdited" />
+    <TransactionList :transactions="transactions" :currency="currency" @transactionDeleted="handleTransactionDeleted"
+      @transactionEdited="handleTransactionEdited" />
     <AddTransaction @transactionSubmitted="handleTransactionSubmitted" />
   </div>
 </template>
@@ -36,14 +37,14 @@ onMounted(() => {
 
   if (savedTransactions) {
     transactions.value = savedTransactions
-  } 
+  }
 })
 
 let currency = ref(''); // Replace this with the selected currency symbol
 
 // Handle currency change
 const handleCurrencyChange = (newCurrency) => {
-  if (!newCurrency){
+  if (!newCurrency) {
     toast.error('Please enter a currency symbol')
     return
   }
@@ -55,12 +56,19 @@ const handleCurrencyChange = (newCurrency) => {
 };
 
 // Get total
-const total = computed(() => {
+const actualTotal = computed(() => {
   return transactions.value.reduce(
     (acc, transaction) => acc + transaction.actualCost,
     0
   );
 });
+
+const projectedTotal = computed(() => {
+  return transactions.value.reduce(
+    (acc, transaction) => acc + transaction.projectedCost,
+    0
+  );
+})
 
 // Get income
 const income = computed(() => {
@@ -78,34 +86,43 @@ const expenses = computed(() => {
 
 // Handle transaction submitted
 const handleTransactionSubmitted = (transactionData) => {
-  // console.log(transactionData)
   transactions.value.push({
-    id: generateUniqueId(),
+    id: transactionData.id,
     text: transactionData.text,
     projectedCost: transactionData.projectedCost,
     actualCost: transactionData.actualCost,
   });
-
+  
+  // console.log(transactions.value)
   saveToLocalStorage()
-  toast.success('Transaction added', {timeout: 2000})
+  toast.success('Transaction added', { timeout: 2000 })
 }
 
 // Handle transaction edited
 const handleTransactionEdited = (transactionData) => {
   // Find the transaction to edit
-saveToLocalStorage()  
+  transactions.value.forEach((transaction) => {
+    if (transaction.id === transactionData.id) {
+      transaction.text = transactionData.text;
+      transaction.projectedCost = transactionData.projectedCost;
+      transaction.actualCost = transactionData.actualCost;
+    }
+  });
+  saveToLocalStorage();
+  // console.log(JSON.stringify(transactions.value))
 }
+
 // Helped function for generating unique id
-const generateUniqueId = () => {
-  return Math.floor(Math.random() * 1000000)
-}
+// const generateUniqueId = () => {
+//   return Math.floor(Math.random() * 1000000)
+// }
 
 // Handle transaction deletion
 const handleTransactionDeleted = (id) => {
   transactions.value = transactions.value.filter((transaction) => transaction.id !== id)
 
   saveToLocalStorage()
-  toast.success('Transaction deleted', {timeout: 2000})
+  toast.success('Transaction deleted', { timeout: 2000 })
 }
 
 // Save to local storage
