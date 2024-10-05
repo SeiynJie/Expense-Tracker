@@ -9,6 +9,7 @@ module.exports = {
     ecmaVersion: 'latest'
   },
   rules: {
-    'no-unused-vars': 'off' // Turn off the unused vars rule
+    'no-unused-vars': 'off', // Turn off the unused vars rule
+    'vue/multi-word-component-names': 'off' // Turn off multi-word component name rule
   }
 }

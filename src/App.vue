@@ -1,15 +1,26 @@
 <template>
   <MainHeader />
   <div class="container">
-    <MainBalance :actualTotal="+actualTotal" :projectedTotal="+projectedTotal" @currencyChanged="handleCurrencyChange" />
-    <IncomeExpenses :actualIncome="+actualIncome" :projectedIncome="+projectedIncome" :actualExpenses="+actualExpenses" :projectedExpenses="+projectedExpenses" :currency="currency" />
+    <MainBalance :actualTotal="+actualTotal" :projectedTotal="+projectedTotal"
+      @currencyChanged="handleCurrencyChange" />
+    <IncomeExpenses :actualIncome="+actualIncome" :projectedIncome="+projectedIncome" :actualExpenses="+actualExpenses"
+      :projectedExpenses="+projectedExpenses" :currency="currency" />
     <TransactionList :transactions="transactions" :currency="currency" @transactionDeleted="handleTransactionDeleted"
       @transactionEdited="handleTransactionEdited" />
     <AddTransaction @transactionSubmitted="handleTransactionSubmitted" />
   </div>
+
+  <nav>
+    <RouterLink to="/">Home</RouterLink>
+    <RouterLink to="/about">About</RouterLink>
+  </nav>
+
+  <RouterView />
 </template>
 
 <script setup>
+import { RouterLink, RouterView } from 'vue-router'
+
 // Main components
 import MainHeader from "./components/MainHeader.vue";
 import MainBalance from "./components/MainBalance.vue";
@@ -110,7 +121,7 @@ const handleTransactionSubmitted = (transactionData) => {
     projectedCost: transactionData.projectedCost,
     actualCost: transactionData.actualCost,
   });
-  
+
   // console.log(transactions.value)
   saveToLocalStorage()
   toast.success('Transaction added', { timeout: 2000 })
@@ -145,3 +156,30 @@ const saveToLocalStorage = () => {
 }
 
 </script>
+
+<style scoped>
+nav {
+  width: 100%;
+  font-size: 12px;
+  text-align: center;
+  margin-top: 2rem;
+}
+
+nav a.router-link-exact-active {
+  color: var(--color-text);
+}
+
+nav a.router-link-exact-active:hover {
+  background-color: transparent;
+}
+
+nav a {
+  display: inline-block;
+  padding: 0 1rem;
+  border-left: 1px solid var(--color-border);
+}
+
+nav a:first-of-type {
+  border: 0;
+}
+</style>
