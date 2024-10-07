@@ -48,3 +48,13 @@ defineProps({
   },
 });
 </script>
+
+<style scoped>
+div {
+  display:inline-block;
+  text-align: left;
+  justify-content: space-between;
+  align-content: space-between;
+  margin: 12px;
+}
+</style>

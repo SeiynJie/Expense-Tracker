@@ -63,7 +63,7 @@ const handleCurrencyChange = () => {
 
 /* Style for the input field */
 .currency-input {
-    font-size: 2.5rem;
+    font-size: 25px;
     border: 0.5px solid #bebebe;
     opacity: 1;
     border-radius: 25px;

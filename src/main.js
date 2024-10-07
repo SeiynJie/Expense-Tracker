@@ -1,15 +1,25 @@
-import './assets/main.css'
+import "./assets/main.css";
 
-import { createApp } from 'vue'
-import App from './App.vue'
-import router from './router'
-import Toast from 'vue-toastification'
-import 'vue-toastification/dist/index.css'
+import { createApp } from "vue";
+import App from "./App.vue";
+import router from "./router";
 
-const app = createApp(App)
+import Toast from "vue-toastification";
+import "vue-toastification/dist/index.css";
+import PrimeVue from "primevue/config";
+import Aura from "@primevue/themes/aura";
 
-const plugins = [router, Toast]; // Array of plugins
+const app = createApp(App);
 
-plugins.forEach(plugin => app.use(plugin));
+app.use(router);
+app.use(Toast);
+app.use(PrimeVue, {
+  theme: {
+    preset: Aura,
+    options: {
+      darkModeSelector: ".my-app-dark",
+    },
+  },
+});
 
-app.mount('#app')
+app.mount("#app");
