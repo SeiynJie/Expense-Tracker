@@ -22,6 +22,7 @@ const router = useRouter();
 // -------------------- For different components using PrimeVue & Vuesax
 import PanelMenu from "primevue/panelmenu";
 import Button from 'primevue/button';
+import Template from "./views/Template.vue"; // Import the Template.vue component
 
 // Load dark mode state from localStorage
 onMounted(() => {
@@ -32,8 +33,34 @@ onMounted(() => {
 
   // Load items from localStorage if they exist
   const savedItems = localStorage.getItem('menuItems');
+
   if (savedItems) {
-    items.value = JSON.parse(savedItems);
+    // Parse saved items and assign to items.value with added command
+    const parsedItems = JSON.parse(savedItems);
+    const pages = parsedItems.find(item => item.label === 'Pages'); // Find the "Pages" section
+
+    if (pages && pages.items) {
+      // Loop through each item under "Pages" and create routes based on the labels
+      pages.items.forEach(page => {
+        const routePath = `/${page.label.toLowerCase()}`; // Use route if it exists or construct one
+        
+        // Add command to the page item
+        page.command = () => {
+          console.log(`${page.label} clicked`);
+          router.push(routePath);
+        };
+
+        // Register the route dynamically
+        router.addRoute({
+          path: routePath,
+          component: Template, // Dynamically recreate each route with the Template component
+        });
+      });
+    }
+
+    // Update items.value with the modified pages that now include commands
+    items.value = parsedItems;
+    console.log(items.value);
   }
 });
 
@@ -42,13 +69,6 @@ const items = ref([
   {
     label: 'Pages',
     items: [
-      { 
-        label: 'September',
-        command: () => {
-          console.log('Reports');
-          router.push('/about');
-        }
-      }
     ]
   },
 ]);
@@ -59,12 +79,10 @@ function saveItemsToLocalStorage() {
 }
 
 // Function to add a new item under the "Pages" section
-import Template from "./views/Template.vue"; // Import the Template.vue component
-
-// Function to add a new item under the "Pages" section
 function addItemToMenu() {
   const currentMonth = new Date().toLocaleString('default', { month: 'long' });
-  let label = currentMonth;
+  let baseLabel = currentMonth;
+  let label = baseLabel;
   let route = `/${currentMonth.toLowerCase()}`;
 
   // Find the "Pages" section
@@ -75,28 +93,35 @@ function addItemToMenu() {
     return;
   }
 
-  // Check for duplicates in the Pages section
-  const existingItem = pages.items?.find(subItem => subItem.label === label);
-  if (existingItem) {
-    // Append "(1)" for duplicates
-    label += ' (1)';
-    route += '-1';
+  // Check for duplicates and increment numbering
+  let counter = 1;
+  let existingItem = pages.items?.find(subItem => subItem.label === label);
+  
+  while (existingItem) {
+    // Increment label and route if a duplicate is found
+    counter++;
+    label = `${baseLabel} (${counter})`;
+    route = `/${baseLabel.toLowerCase()}-${counter}`;
+    
+    existingItem = pages.items?.find(subItem => subItem.label === label);
   }
 
   // Push the new item under the "Pages" item
   pages.items.push({
     label: label,
+    route: route,
     command: () => {
       console.log(`${label} clicked`);
-      router.push(route);
+      router.push(route);  // Add navigation command
     }
   });
 
+  console.log(items.value);
+  
   // Dynamically register the route for the new month
   router.addRoute({
     path: route,
     component: Template,
-    props: { month: label } // Pass the month as a prop if needed
   });
 
   // Save the updated items to localStorage

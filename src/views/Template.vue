@@ -23,10 +23,14 @@ import { useToast } from "vue-toastification";
 
 // Importing stuff from vue
 import { ref, computed, onMounted } from "vue";
+import router from "@/router";
 
 const toast = useToast() // Notifications
 
 const transactions = ref([]);
+
+const currentRoute = router.currentRoute
+console.log(currentRoute)
 
 // Load saved data
 onMounted(() => {
