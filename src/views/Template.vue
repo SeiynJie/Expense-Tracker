@@ -22,7 +22,7 @@ import AddTransaction from "../components/AddTransaction.vue";
 import { useToast } from "vue-toastification";
 
 // Importing stuff from vue
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onUpdated } from "vue";
 import router from "@/router";
 
 const toast = useToast() // Notifications
@@ -30,20 +30,45 @@ const toast = useToast() // Notifications
 const transactions = ref([]);
 
 const currentRoute = router.currentRoute
-console.log(currentRoute)
 
+function loadTransactions(){
+  const savedTransactions = JSON.parse(localStorage.getItem('transactions')) || {}; // Initialize as an empty object if not present
+  const savedCurrency = localStorage.getItem('currency'); // Load global currency setting
+
+  if (savedCurrency) {
+    currency.value = savedCurrency;
+  }
+
+  // Load transactions specific to the current route
+  const routePath = currentRoute.value.path; // Get current route path
+  if (savedTransactions[routePath]) {
+    transactions.value = savedTransactions[routePath]; // Load transactions for the current route
+    console.log(`Loaded transactions for ${routePath}:`, transactions.value);
+  }
+}
 // Load saved data
 onMounted(() => {
-  const savedTransactions = JSON.parse(localStorage.getItem('transactions'))
-  const savedCurrency = localStorage.getItem('currency')
-  if (savedCurrency) {
-    currency.value = savedCurrency
-  }
+  loadTransactions()
+});
 
-  if (savedTransactions) {
-    transactions.value = savedTransactions
-  }
+// Update transactions when the route changes
+onUpdated(() => {
+  console.log('Route changed to:', currentRoute.value.path);
 })
+
+// Save to local storage
+const saveToLocalStorage = () => {
+  const routePath = currentRoute.value.path; // Get current route path
+  const savedTransactions = JSON.parse(localStorage.getItem('transactions')) || {}; // Initialize as an empty object if not present
+
+  // Update transactions for the current route
+  savedTransactions[routePath] = transactions.value;
+  console.log(savedTransactions)
+
+  // Save the entire transactions object back to local storage
+  localStorage.setItem('transactions', JSON.stringify(savedTransactions)); // Save all transactions under the main transactions table
+  localStorage.setItem('currency', currency.value); // Save global currency setting
+};
 
 let currency = ref(''); // Replace this with the selected currency symbol
 
@@ -142,14 +167,8 @@ const handleTransactionDeleted = (id) => {
   saveToLocalStorage()
   toast.success('Transaction deleted', { timeout: 2000 })
 }
-
-// Save to local storage
-const saveToLocalStorage = () => {
-  localStorage.setItem('transactions', JSON.stringify(transactions.value))
-  localStorage.setItem('currency', currency.value)
-}
-
 </script>
+
 <style>
 @media (min-width: 1024px) {
   .about {
