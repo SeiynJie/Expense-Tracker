@@ -13,6 +13,8 @@
     "@coreui/coreui": "^5.1.2",
     "@coreui/vue": "^5.4.0",
     "@primevue/themes": "^4.0.7",
+    "browserify": "^17.0.1",
+    "fs": "^0.0.1-security",
     "primevue": "^4.0.7",
     "vue": "^3.4.29",
     "vue-router": "^4.3.3",

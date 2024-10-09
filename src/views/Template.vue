@@ -31,30 +31,59 @@ const transactions = ref([]);
 
 const currentRoute = router.currentRoute
 
-function loadTransactions(){
-  const savedTransactions = JSON.parse(localStorage.getItem('transactions')) || {}; // Initialize as an empty object if not present
-  const savedCurrency = localStorage.getItem('currency'); // Load global currency setting
+let previousRoute = null; // Variable to store the previous route
 
+function loadTransactions() {
+  console.log('Route changed to:', currentRoute.value.path);
+
+  // Load saved transactions from localStorage, or initialize as an empty object
+  let savedTransactions = JSON.parse(localStorage.getItem('transactions')) || {}; 
+
+  // Load global currency setting if available
+  const savedCurrency = localStorage.getItem('currency'); 
   if (savedCurrency) {
     currency.value = savedCurrency;
   }
 
-  // Load transactions specific to the current route
-  const routePath = currentRoute.value.path; // Get current route path
-  if (savedTransactions[routePath]) {
-    transactions.value = savedTransactions[routePath]; // Load transactions for the current route
-    console.log(`Loaded transactions for ${routePath}:`, transactions.value);
+  // Get the current route path
+  const routePath = currentRoute.value.path;
+
+  // If there are no transactions for the current route, initialize it
+  if (!savedTransactions[routePath]) {
+    console.log(`No transactions found for ${routePath}. Initializing new transactions.`);
+    savedTransactions[routePath] = [{ 
+      id: Math.floor(Math.random() * 1000000), // Generate a random ID
+      text: '', 
+      projectedCost: 0, 
+      actualCost: 0 
+    }];
+    localStorage.setItem('transactions', JSON.stringify(savedTransactions));
   }
+
+  // Load transactions for the current route
+  transactions.value = savedTransactions[routePath]; 
+  console.log(`Loaded transactions for ${routePath}:`, transactions.value);
 }
-// Load saved data
+
+// Load saved data on component mount
 onMounted(() => {
-  loadTransactions()
+  previousRoute = currentRoute.value.path; // Store the initial route on mount
+  loadTransactions();
 });
 
-// Update transactions when the route changes
+// Update transactions only if the route changes
 onUpdated(() => {
-  console.log('Route changed to:', currentRoute.value.path);
-})
+  const newRoute = router.currentRoute.value.path;
+
+  // Only load transactions if the route has actually changed
+  if (newRoute !== previousRoute) {
+    localStorage.setItem('lastRoute', newRoute); // Save the last route
+    loadTransactions();
+    previousRoute = newRoute; // Update previousRoute to the new one
+    console.log(`Previous route: ${previousRoute}`);
+  }
+});
+
 
 // Save to local storage
 const saveToLocalStorage = () => {

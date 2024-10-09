@@ -3,7 +3,7 @@
     <section class="sidebar">
       <Button label="Toggle Dark Mode" @click="toggleDarkMode()" />
 
-      <PanelMenu :model="items"/>
+      <PanelMenu :model="items" />
       <Button label="Add new page" @click="addItemToMenu()" />
     </section>
 
@@ -32,35 +32,73 @@ onMounted(() => {
   }
 
   // Load items from localStorage if they exist
-  const savedItems = localStorage.getItem('menuItems');
+  let savedItems = localStorage.getItem('menuItems');
+  let lastRoute = localStorage.getItem('lastRoute'); // Load the last saved route
 
-  if (savedItems) {
-    // Parse saved items and assign to items.value with added command
-    const parsedItems = JSON.parse(savedItems);
-    const pages = parsedItems.find(item => item.label === 'Pages'); // Find the "Pages" section
+  // Initialize default values if no saved items exist
+  if (!savedItems) {
+    console.log('No saved menu items found. Initializing default values.');
+    const defaultMenuItems = [
+      {
+        label: 'Pages',
+        items: [
+          {
+            label: 'January',
+            route: '/january',
+            command: () => {
+              console.log('January clicked');
+              router.push('/january');
+            }
+          },
+        ]
+      },
+    ];
 
-    if (pages && pages.items) {
-      // Loop through each item under "Pages" and create routes based on the labels
-      pages.items.forEach(page => {
-        const routePath = `/${page.label.toLowerCase()}`; // Use route if it exists or construct one
-        
-        // Add command to the page item
-        page.command = () => {
-          console.log(`${page.label} clicked`);
-          router.push(routePath);
-        };
+    // Assign the default items to items.value and save them to localStorage
+    items.value = defaultMenuItems;
+    localStorage.setItem('menuItems', JSON.stringify(defaultMenuItems));
+    savedItems = localStorage.getItem('menuItems');
+  }
 
-        // Register the route dynamically
-        router.addRoute({
-          path: routePath,
-          component: Template, // Dynamically recreate each route with the Template component
-        });
+  if (!lastRoute) {
+    console.log('No last route found. Initializing default route.');
+    lastRoute = '/'; // Set the default route to the homepage
+    localStorage.setItem('lastRoute', lastRoute);
+  }
+
+  // Parse saved items and assign to items.value with added command
+  const parsedItems = JSON.parse(savedItems);
+  const pages = parsedItems.find(item => item.label === 'Pages'); // Find the "Pages" section
+
+  if (pages && pages.items) {
+    // Loop through each item under "Pages" and create routes based on the labels
+    pages.items.forEach(page => {
+      const routePath = page.route || `/${page.label.toLowerCase()}`; // Use route if it exists or construct one
+
+      // Add command to the page item
+      page.command = () => {
+        console.log(`${page.label} clicked`);
+        router.push(routePath);
+      };
+
+      // Register the route dynamically
+      router.addRoute({
+        path: routePath,
+        component: Template, // Dynamically recreate each route with the Template component
       });
-    }
+    });
+  }
 
-    // Update items.value with the modified pages that now include commands
-    items.value = parsedItems;
-    console.log(items.value);
+  // Update items.value with the modified pages that now include commands
+  items.value = parsedItems;
+  console.log(items.value);
+  saveItemsToLocalStorage();
+
+  // If there's a last route, navigate to it
+  if (lastRoute) {
+    router.push(lastRoute);
+  } else {
+    router.push('/'); // Default to root if no last route is saved
   }
 });
 
@@ -69,13 +107,26 @@ const items = ref([
   {
     label: 'Pages',
     items: [
+      {
+        label: 'January',
+        route: '/january',
+        command: () => {
+          console.log('January clicked');
+          router.push('/january');
+        }
+      },
     ]
   },
 ]);
 
-// Function to save items to localStorage
+// Function to save items and last route to localStorage
 function saveItemsToLocalStorage() {
+  // Save the menu items
   localStorage.setItem('menuItems', JSON.stringify(items.value));
+
+  // Save the last route
+  const lastRoute = router.currentRoute.value.path; // Assuming currentRoute is reactive and holds the current route path
+  localStorage.setItem('lastRoute', lastRoute);
 }
 
 // Function to add a new item under the "Pages" section
@@ -96,13 +147,13 @@ function addItemToMenu() {
   // Check for duplicates and increment numbering
   let counter = 1;
   let existingItem = pages.items?.find(subItem => subItem.label === label);
-  
+
   while (existingItem) {
     // Increment label and route if a duplicate is found
     counter++;
     label = `${baseLabel} (${counter})`;
     route = `/${baseLabel.toLowerCase()}-${counter}`;
-    
+
     existingItem = pages.items?.find(subItem => subItem.label === label);
   }
 
@@ -117,7 +168,7 @@ function addItemToMenu() {
   });
 
   console.log(items.value);
-  
+
   // Dynamically register the route for the new month
   router.addRoute({
     path: route,
@@ -133,7 +184,7 @@ function addItemToMenu() {
 function toggleDarkMode() {
   const element = document.querySelector('html');
   element.classList.toggle('my-app-dark');
-  
+
   if (element.classList.contains('my-app-dark')) {
     localStorage.setItem('darkMode', 'enabled');
   } else {
