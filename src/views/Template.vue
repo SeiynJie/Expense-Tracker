@@ -1,5 +1,5 @@
 <template>
-  <MainHeader />
+  <MainHeader :importedPageName="pageName" @pageNameChanged="handlePageNameChange" />
   <div class="container">
     <MainBalance :actualTotal="+actualTotal" :projectedTotal="+projectedTotal"
       @currencyChanged="handleCurrencyChange" />
@@ -32,6 +32,34 @@ const transactions = ref([]);
 const currentRoute = router.currentRoute
 
 let previousRoute = null; // Variable to store the previous route
+
+let pageName = ref('');
+function loadPageName() {
+    // Get the menuItems from localStorage
+    let menuItems = JSON.parse(localStorage.getItem('menuItems'));
+
+    if (menuItems && menuItems.length > 0) {
+        // Find the "Pages" section
+        const pages = menuItems.find(item => item.label === 'Pages');
+
+        if (pages && pages.items) {
+            // Loop through the pages' items to find a matching route
+            const matchingPage = pages.items.find(page => page.route === currentRoute.value.path);
+
+            if (matchingPage) {
+                // If a match is found, set the pageName to the matching label
+                pageName.value = matchingPage.label;
+                console.log('Page Name:', pageName.value);
+            } else {
+                console.log('No matching route found in menuItems');
+            }
+        } else {
+            console.log('Pages section not found in menuItems');
+        }
+    } else {
+        console.log('No menuItems found in localStorage');
+    }
+}
 
 function loadTransactions() {
   console.log('Route changed to:', currentRoute.value.path);
@@ -69,6 +97,7 @@ function loadTransactions() {
 onMounted(() => {
   previousRoute = currentRoute.value.path; // Store the initial route on mount
   loadTransactions();
+  loadPageName()
 });
 
 // Update transactions only if the route changes
@@ -79,6 +108,7 @@ onUpdated(() => {
   if (newRoute !== previousRoute) {
     localStorage.setItem('lastRoute', newRoute); // Save the last route
     loadTransactions();
+    loadPageName()
     previousRoute = newRoute; // Update previousRoute to the new one
     console.log(`Previous route: ${previousRoute}`);
   }
@@ -100,6 +130,12 @@ const saveToLocalStorage = () => {
 };
 
 let currency = ref(''); // Replace this with the selected currency symbol
+
+// For changing the page name
+const emit = defineEmits(['pageNameChanged'])
+const handlePageNameChange = (newPageName, currentRoute) => {
+  emit('pageNameChanged', newPageName, currentRoute);
+}
 
 // Handle currency change
 const handleCurrencyChange = (newCurrency) => {

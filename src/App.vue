@@ -1,14 +1,30 @@
 <template>
   <main>
-    <section class="sidebar">
+    <div class="sidebar">
       <Button label="Toggle Dark Mode" @click="toggleDarkMode()" />
 
-      <PanelMenu :model="items" />
-      <Button label="Add new page" @click="addItemToMenu()" />
-    </section>
+      <PanelMenu :model="items"/>
 
+      <Button label="Add new page" @click="addItemToMenu()" />
+
+      <Dialog v-model:visible="visibleDialogue" modal header="Edit Page Info" :style="{ width: '25rem' }">
+        <span>Update your information.</span>
+        <div >
+          <label for="username">Username</label>
+          <InputText id="username" class="flex-auto" autocomplete="off" />
+        </div>
+        <div>
+          <label for="email">Email</label>
+          <InputText id="email" class="flex-auto" autocomplete="off" />
+        </div>
+        <div>
+          <Button type="button" label="Cancel" severity="secondary" @click="visibleDialogue = false"></Button>
+          <Button type="button" label="Save" @click="visibleDialogue = false"></Button>
+        </div>
+      </Dialog>
+    </div>
     <section>
-      <RouterView />
+      <RouterView @pageNameChanged="handlePageNameChange" />
     </section>
   </main>
 </template>
@@ -22,10 +38,13 @@ const router = useRouter();
 // -------------------- For different components using PrimeVue & Vuesax
 import PanelMenu from "primevue/panelmenu";
 import Button from 'primevue/button';
+import Dialog from 'primevue/dialog';
+import InputText from 'primevue/inputtext';
+
 import Template from "./views/Template.vue"; // Import the Template.vue component
 
 // Load dark mode state from localStorage
-onMounted(() => {
+function loadData(){
   const isDarkMode = localStorage.getItem('darkMode');
   if (isDarkMode === 'enabled') {
     document.querySelector('html').classList.add('my-app-dark');
@@ -44,10 +63,10 @@ onMounted(() => {
         items: [
           {
             label: 'January',
-            route: '/january',
+            route: '/1',
             command: () => {
               console.log('January clicked');
-              router.push('/january');
+              router.push('/1');
             }
           },
         ]
@@ -100,7 +119,12 @@ onMounted(() => {
   } else {
     router.push('/'); // Default to root if no last route is saved
   }
+}
+onMounted(() => {
+  loadData()
 });
+
+const visibleDialogue = ref(false);
 
 // Initialize items with a ref, will load from localStorage later
 const items = ref([
@@ -109,15 +133,31 @@ const items = ref([
     items: [
       {
         label: 'January',
-        route: '/january',
+        route: '/1',
         command: () => {
           console.log('January clicked');
-          router.push('/january');
-        }
+          router.push('/1');
+        },
       },
     ]
   },
 ]);
+
+const handlePageNameChange = (newPageName, currentRoute) => {
+  // console.log('Page Name:', newPageName, currentRoute);
+
+  // Update the page name in the items array
+  const pages = items.value.find(item => item.label === 'Pages');
+  if (pages) {
+    pages.items.forEach(page => {
+      if (page.route === currentRoute) {
+        page.label = newPageName;
+      }
+    });
+  }
+
+  saveItemsToLocalStorage();
+}
 
 // Function to save items and last route to localStorage
 function saveItemsToLocalStorage() {
@@ -134,7 +174,6 @@ function addItemToMenu() {
   const currentMonth = new Date().toLocaleString('default', { month: 'long' });
   let baseLabel = currentMonth;
   let label = baseLabel;
-  let route = `/${currentMonth.toLowerCase()}`;
 
   // Find the "Pages" section
   const pages = items.value.find(item => item.label === 'Pages');
@@ -144,38 +183,40 @@ function addItemToMenu() {
     return;
   }
 
-  // Check for duplicates and increment numbering
+  // Calculate the new route based on the number of existing items
+  const newIndex = pages.items.length + 1; // Next route number
+  const route = `/${newIndex}`; // Route will be based on the number of existing items
+
+  // Check for duplicate labels and increment numbering if needed
   let counter = 1;
   let existingItem = pages.items?.find(subItem => subItem.label === label);
 
   while (existingItem) {
-    // Increment label and route if a duplicate is found
+    // Increment the label if a duplicate is found
     counter++;
     label = `${baseLabel} (${counter})`;
-    route = `/${baseLabel.toLowerCase()}-${counter}`;
-
     existingItem = pages.items?.find(subItem => subItem.label === label);
   }
 
-  // Push the new item under the "Pages" item
+  // Push the new item under the "Pages" section
   pages.items.push({
     label: label,
     route: route,
     command: () => {
       console.log(`${label} clicked`);
-      router.push(route);  // Add navigation command
+      router.push(route); // Add navigation command with the new route
     }
   });
 
   console.log(items.value);
 
-  // Dynamically register the route for the new month
+  // Dynamically register the new route based on the number of items
   router.addRoute({
     path: route,
     component: Template,
   });
 
-  // Save the updated items to localStorage
+  // Save the updated items and route to localStorage
   saveItemsToLocalStorage();
 
   console.log(items.value);
@@ -202,7 +243,7 @@ main {
 .sidebar {
   display: flex;
   flex-direction: column;
-  width: 200px;
+  width: 300px;
   height: 100vh;
   padding: 20px;
   gap: 5px;
