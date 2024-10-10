@@ -111,14 +111,30 @@ function loadData() {
   // Update items.value with the modified pages that now include commands
   items.value = parsedItems;
   console.log(items.value);
-  saveItemsToLocalStorage();
 
-  // If there's a last route, navigate to it
+  // If there's a last route, navigate to it with retries
   if (lastRoute) {
-    router.push(lastRoute);
+    let success = false;
+    let retries = 5; // Maximum number of retries
+
+    while (!success && retries > 0) {
+      try {
+        router.push(lastRoute);
+        success = true; // Navigation successful
+      } catch (error) {
+        retries--;
+        console.error(`Failed to navigate to ${lastRoute}, retries left: ${retries}`);
+      }
+    }
+
+    if (!success) {
+      router.push('/'); // Default to root if all retries failed
+    }
   } else {
     router.push('/'); // Default to root if no last route is saved
   }
+
+  saveItemsToLocalStorage(lastRoute);
 }
 onMounted(() => {
   loadData()
@@ -223,10 +239,10 @@ const handleDeletePage = (currentRoute) => {
     }
 
     localStorage.setItem('transactions', JSON.stringify(savedTransactions));
-    
+
     const nextRoute = pages.items.length > 0 ? pages.items[0].route : '/'; // Default to '/' if no items are left
     router.push(nextRoute);
-    
+
     // Update the localStorage with the modified items and transactions
     saveItemsToLocalStorage();
     console.log(`Item with route: ${currentRoute} has been deleted, routes and commands updated.`);
@@ -236,12 +252,12 @@ const handleDeletePage = (currentRoute) => {
 };
 
 // Function to save items and last route to localStorage
-function saveItemsToLocalStorage() {
+function saveItemsToLocalStorage(providedLastRoute = null) {
   // Save the menu items
   localStorage.setItem('menuItems', JSON.stringify(items.value));
 
-  // Save the last route
-  const lastRoute = router.currentRoute.value.path; // Assuming currentRoute is reactive and holds the current route path
+  // Save the last route, use the provided route or fallback to the current route
+  const lastRoute = providedLastRoute || router.currentRoute.value.path; // Use providedLastRoute if given, else use current route
   localStorage.setItem('lastRoute', lastRoute);
 }
 
