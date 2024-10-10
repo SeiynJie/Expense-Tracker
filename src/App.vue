@@ -3,13 +3,13 @@
     <div class="sidebar">
       <Button label="Toggle Dark Mode" @click="toggleDarkMode()" />
 
-      <PanelMenu :model="items"/>
+      <PanelMenu :model="items" />
 
       <Button label="Add new page" @click="addItemToMenu()" />
 
       <Dialog v-model:visible="visibleDialogue" modal header="Edit Page Info" :style="{ width: '25rem' }">
         <span>Update your information.</span>
-        <div >
+        <div>
           <label for="username">Username</label>
           <InputText id="username" class="flex-auto" autocomplete="off" />
         </div>
@@ -24,7 +24,7 @@
       </Dialog>
     </div>
     <section>
-      <RouterView @pageNameChanged="handlePageNameChange" />
+      <RouterView @pageNameChanged="handlePageNameChange" @deletePage="handleDeletePage" />
     </section>
   </main>
 </template>
@@ -44,7 +44,7 @@ import InputText from 'primevue/inputtext';
 import Template from "./views/Template.vue"; // Import the Template.vue component
 
 // Load dark mode state from localStorage
-function loadData(){
+function loadData() {
   const isDarkMode = localStorage.getItem('darkMode');
   if (isDarkMode === 'enabled') {
     document.querySelector('html').classList.add('my-app-dark');
@@ -158,6 +158,82 @@ const handlePageNameChange = (newPageName, currentRoute) => {
 
   saveItemsToLocalStorage();
 }
+
+const handleDeletePage = (currentRoute) => {
+  // alert(currentRoute);
+  // Get the transactions for the current route
+  let savedTransactions = JSON.parse(localStorage.getItem('transactions')) || {};
+  try {
+
+    // Check matching route
+    if (savedTransactions[currentRoute]) {
+      // Remove the transactions for the current route
+      delete savedTransactions[currentRoute];
+
+      // Update the localStorage with the modified transactions
+      localStorage.setItem('transactions', JSON.stringify(savedTransactions));
+
+      console.log(`Transactions for route: ${currentRoute} have been deleted.`);
+    } else {
+      console.log(`No transactions found for route: ${currentRoute}`);
+    }
+  } catch (error) {
+    console.error('Error deleting transactions for page:', error);
+  }
+
+  try {
+    // Find the "Pages" section in the reactive items ref
+    const pages = items.value.find(item => item.label === 'Pages');
+
+    if (!pages || !pages.items) {
+      console.error('Pages section not found or has no items');
+      return;
+    }
+
+    // Find the item with the matching route
+    const itemIndex = pages.items.findIndex(subItem => subItem.route === currentRoute);
+
+    if (itemIndex === -1) {
+      console.log(`No item found with route: ${currentRoute}`);
+      return;
+    }
+
+    // Delete the item with the matching route
+    pages.items.splice(itemIndex, 1);
+
+    // Update the route and command for all items after the deleted one
+    for (let i = itemIndex; i < pages.items.length; i++) {
+      const oldRoute = pages.items[i].route;
+      const newRoute = `/${i + 1}`;
+
+      // Update the item's route
+      pages.items[i].route = newRoute;
+
+      // Update the item's command to reflect the new route
+      pages.items[i].command = () => {
+        console.log(`${pages.items[i].label} clicked`);
+        router.push(newRoute);
+      };
+
+      // Update corresponding transactions for the new route
+      if (savedTransactions[oldRoute]) {
+        savedTransactions[newRoute] = savedTransactions[oldRoute];
+        delete savedTransactions[oldRoute];
+      }
+    }
+
+    localStorage.setItem('transactions', JSON.stringify(savedTransactions));
+    
+    const nextRoute = pages.items.length > 0 ? pages.items[0].route : '/'; // Default to '/' if no items are left
+    router.push(nextRoute);
+    
+    // Update the localStorage with the modified items and transactions
+    saveItemsToLocalStorage();
+    console.log(`Item with route: ${currentRoute} has been deleted, routes and commands updated.`);
+  } catch (error) {
+    console.error('An error occurred while deleting the page:', error);
+  }
+};
 
 // Function to save items and last route to localStorage
 function saveItemsToLocalStorage() {

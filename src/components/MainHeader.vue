@@ -3,7 +3,13 @@
         <h2>Expense Tracker & Planner - </h2>
         <textarea v-model="pageName" class="currency-input" @input="handlePageNameChange" placeholder="Change Page Name"
             rows="1.5"></textarea>
-        <!-- <Button label="Save Route" @click="handlePageNameChange" /> -->
+        <Button class="deleteButton" label="Delete Page" @click="visible = true" />
+        <Dialog v-model:visible="visible" modal header="Confirm Delete Page" :style="{ width: '25rem' }">
+            <div class="flex justify-end gap-2">
+                <Button type="button" label="Cancel" severity="secondary" @click="visible = false"></Button>
+                <Button class="confirmDelete" label="Delete" @click="deletePage"></Button>
+            </div>
+        </Dialog>
     </div>
 </template>
 
@@ -11,23 +17,26 @@
 import { ref, onMounted, onUpdated } from 'vue';
 import router from '@/router';
 import Button from 'primevue/button';
-
-const currentRoute = router.currentRoute
-
-let previousRoute = localStorage.getItem('lastRoute').value; // Variable to store the previous route
-// 
+import Dialog from 'primevue/dialog';
 
 const pageName = ref('');
-// 4:15 PM
-// It should first take in the page name as props
 
-const emit = defineEmits(['pageNameChanged'])
+const emit = defineEmits(['pageNameChanged', 'deletePage']);
 
 // Handle currency change logic
 const handlePageNameChange = () => {
     const currentRoute = router.currentRoute.value.path
     emit('pageNameChanged', pageName.value, currentRoute);   // Emit the page name
 };
+
+const visible = ref(false);
+function deletePage() {
+    visible.value = false
+    let currentRoute = localStorage.getItem('lastRoute')
+
+    // alert(currentRoute)
+    emit('deletePage', currentRoute);   // Emit the page name
+}
 
 </script>
 
@@ -56,10 +65,18 @@ div {
     /* Disable manual resizing */
 }
 
-/* button{
+.deleteButton {
     height: 36px;
     align-self: center;
     margin-left: 10px;
     border-radius: 16px;
-} */
+    background-color: red;
+    border-color: red;
+}
+
+.connfirmDelete {
+    background-color: red;
+    border-color: red;
+}
+
 </style>

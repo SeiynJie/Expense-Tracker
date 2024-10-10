@@ -1,5 +1,5 @@
 <template>
-  <MainHeader :importedPageName="pageName" @pageNameChanged="handlePageNameChange" />
+  <MainHeader :importedPageName="pageName" @pageNameChanged="handlePageNameChange" @deletePage="handleDeletePage" />
   <div class="container">
     <MainBalance :actualTotal="+actualTotal" :projectedTotal="+projectedTotal"
       @currencyChanged="handleCurrencyChange" />
@@ -132,9 +132,13 @@ const saveToLocalStorage = () => {
 let currency = ref(''); // Replace this with the selected currency symbol
 
 // For changing the page name
-const emit = defineEmits(['pageNameChanged'])
+const emit = defineEmits(['pageNameChanged', 'deletePage']);
 const handlePageNameChange = (newPageName, currentRoute) => {
   emit('pageNameChanged', newPageName, currentRoute);
+}
+
+const handleDeletePage = (currentRoute) => {
+  emit('deletePage', currentRoute);
 }
 
 // Handle currency change
@@ -235,11 +239,8 @@ const handleTransactionDeleted = (id) => {
 </script>
 
 <style>
-@media (min-width: 1024px) {
-  .about {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-  }
+.container {
+  display: flex;
+  flex-direction: column;
 }
 </style>
