@@ -14,6 +14,7 @@
     "@coreui/vue": "^5.4.0",
     "@primevue/themes": "^4.0.7",
     "browserify": "^17.0.1",
+    "firebase": "^10.14.1",
     "fs": "^0.0.1-security",
     "primevue": "^4.0.7",
     "vue": "^3.4.29",

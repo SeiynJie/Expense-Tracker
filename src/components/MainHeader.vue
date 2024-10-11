@@ -1,7 +1,7 @@
 <template>
     <div>
         <h2>Expense Tracker & Planner - </h2>
-        <textarea v-model="pageName" class="currency-input" @input="handlePageNameChange" placeholder="Change Page Name"
+        <textarea v-model="pageName" class="name-input" @input="handlePageNameChange" placeholder="Change Page Name"
             rows="1.5"></textarea>
         <Button class="deleteButton" label="Delete Page" @click="visible = true" />
         <Dialog v-model:visible="visible" modal header="Confirm Delete Page" :style="{ width: '25rem' }">
@@ -47,8 +47,9 @@ div {
 }
 
 /* Style for the input field */
-.currency-input {
+.name-input {
     font-size: 24px;
+    font-family: 'Roboto', sans-serif;
     align-self: center;
     border: 0.5px solid #bebebe;
     border-radius: 15px;

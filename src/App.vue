@@ -1,11 +1,11 @@
 <template>
   <main>
     <div class="sidebar">
-      <Button label="Toggle Dark Mode" @click="toggleDarkMode()" />
-
-      <PanelMenu :model="items" />
-
-      <Button label="Add new page" @click="addItemToMenu()" />
+      <div class="panelMenu" v-if="isLoggedIn==true">
+        <PanelMenu :model="items" />
+  
+        <Button label="Add new page" @click="addItemToMenu()" />
+      </div>
 
       <Dialog v-model:visible="visibleDialogue" modal header="Edit Page Info" :style="{ width: '25rem' }">
         <span>Update your information.</span>
@@ -22,6 +22,11 @@
           <Button type="button" label="Save" @click="visibleDialogue = false"></Button>
         </div>
       </Dialog>
+
+      <Button label="Toggle Dark Mode" @click="toggleDarkMode()" />
+      <Button label="Register" @click="router.push('/register')" v-if="isLoggedIn == false"/>
+      <Button label="Sign in" @click="router.push('/signin')"  v-if="isLoggedIn == false"/>
+      <Button label="Sign out" @click="handleSignOut" v-if="isLoggedIn == true" />
     </div>
     <section>
       <RouterView @pageNameChanged="handlePageNameChange" @deletePage="handleDeletePage" />
@@ -42,6 +47,35 @@ import Dialog from 'primevue/dialog';
 import InputText from 'primevue/inputtext';
 
 import Template from "./views/Template.vue"; // Import the Template.vue component
+
+import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+const isLoggedIn = ref(false);
+
+let auth
+onMounted(() => {
+  // For dark mode since the actual loading of dark mode is embedded in loadData(), I'm just lazy xD so I copied the logic
+  const isDarkMode = localStorage.getItem('darkMode');
+  if (isDarkMode === 'enabled') {
+    document.querySelector('html').classList.add('my-app-dark');
+  }
+
+  auth = getAuth()
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      isLoggedIn.value = true;
+      loadData()
+    } else {
+      isLoggedIn.value = false
+    }})
+});
+
+const handleSignOut = () => {
+signOut(auth).then(() => {
+  router.push('/')
+})
+}
+
+
 
 // Load dark mode state from localStorage
 function loadData() {
@@ -81,7 +115,7 @@ function loadData() {
 
   if (!lastRoute) {
     console.log('No last route found. Initializing default route.');
-    lastRoute = '/'; // Set the default route to the homepage
+    lastRoute = '/1'; // Set the default route to the homepage
     localStorage.setItem('lastRoute', lastRoute);
   }
 
@@ -115,7 +149,7 @@ function loadData() {
   // If there's a last route, navigate to it with retries
   if (lastRoute) {
     let success = false;
-    let retries = 5; // Maximum number of retries
+    let retries = 3; // Maximum number of retries
 
     while (!success && retries > 0) {
       try {
@@ -136,9 +170,7 @@ function loadData() {
 
   saveItemsToLocalStorage(lastRoute);
 }
-onMounted(() => {
-  loadData()
-});
+
 
 const visibleDialogue = ref(false);
 
@@ -330,14 +362,21 @@ function toggleDarkMode() {
 main {
   display: flex;
   justify-content: space-between;
+  margin-right: 15px;
+  overflow-y: auto;
+  overflow-x: auto;
+  width: 100%;
 }
 
-.sidebar {
+section{
+  margin-left: 15px;
+}
+.sidebar, .panelMenu {
   display: flex;
   flex-direction: column;
   width: 300px;
-  height: 100vh;
-  padding: 20px;
+  height: auto;
+  /* padding: 20px; */
   gap: 5px;
   /* background-color: #f0f0f0; */
 }
