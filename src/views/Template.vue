@@ -21,6 +21,7 @@ import AddTransaction from "../components/AddTransaction.vue";
 
 import { useToast } from "vue-toastification";
 
+import { getDatabase, ref as firebaseRef, onValue } from "firebase/database";
 // Importing stuff from vue
 import { ref, computed, onMounted, onUpdated } from "vue";
 import router from "@/router";
@@ -35,63 +36,117 @@ let previousRoute = null; // Variable to store the previous route
 
 let pageName = ref('');
 function loadPageName() {
-    // Get the menuItems from localStorage
-    let menuItems = JSON.parse(localStorage.getItem('menuItems'));
+  // Get the menuItems from localStorage
+  let menuItems = JSON.parse(localStorage.getItem('menuItems'));
 
-    if (menuItems && menuItems.length > 0) {
-        // Find the "Pages" section
-        const pages = menuItems.find(item => item.label === 'Pages');
+  if (menuItems && menuItems.length > 0) {
+    // Find the "Pages" section
+    const pages = menuItems.find(item => item.label === 'Pages');
 
-        if (pages && pages.items) {
-            // Loop through the pages' items to find a matching route
-            const matchingPage = pages.items.find(page => page.route === currentRoute.value.path);
+    if (pages && pages.items) {
+      // Loop through the pages' items to find a matching route
+      const matchingPage = pages.items.find(page => page.route === currentRoute.value.path);
 
-            if (matchingPage) {
-                // If a match is found, set the pageName to the matching label
-                pageName.value = matchingPage.label;
-                console.log('Page Name:', pageName.value);
-            } else {
-                console.log('No matching route found in menuItems');
-            }
-        } else {
-            console.log('Pages section not found in menuItems');
-        }
+      if (matchingPage) {
+        // If a match is found, set the pageName to the matching label
+        pageName.value = matchingPage.label;
+        console.log('Page Name:', pageName.value);
+      } else {
+        console.log('No matching route found in menuItems');
+      }
     } else {
-        console.log('No menuItems found in localStorage');
+      console.log('Pages section not found in menuItems');
     }
+  } else {
+    console.log('No menuItems found in localStorage');
+  }
 }
 
 function loadTransactions() {
   console.log('Route changed to:', currentRoute.value.path);
 
-  // Load saved transactions from localStorage, or initialize as an empty object
-  let savedTransactions = JSON.parse(localStorage.getItem('transactions')) || {}; 
-
   // Load global currency setting if available
-  const savedCurrency = localStorage.getItem('currency'); 
+  const savedCurrency = localStorage.getItem('currency');
   if (savedCurrency) {
     currency.value = savedCurrency;
   }
 
+  // Load saved transactions from localStorage, or initialize as an empty object
+  let savedTransactions = JSON.parse(localStorage.getItem('transactions')) || {};
+
   // Get the current route path
   const routePath = currentRoute.value.path;
 
-  // If there are no transactions for the current route, initialize it
-  if (!savedTransactions[routePath]) {
-    console.log(`No transactions found for ${routePath}. Initializing new transactions.`);
-    savedTransactions[routePath] = [{ 
-      id: Math.floor(Math.random() * 1000000), // Generate a random ID
-      text: '', 
-      projectedCost: 0, 
-      actualCost: 0 
-    }];
-    localStorage.setItem('transactions', JSON.stringify(savedTransactions));
-  }
+  // Reference to the current user's data in the database
+  const currentUserUID = localStorage.getItem('userID');
+  const database = getDatabase();
+  const reference = firebaseRef(database, `users/${currentUserUID}/transactions`);
+  console.log(reference);
 
-  // Load transactions for the current route
-  transactions.value = savedTransactions[routePath]; 
-  console.log(`Loaded transactions for ${routePath}:`, transactions.value);
+
+  // If there are no transactions for the current route, initialize it
+  // if (!savedTransactions[routePath]) {
+  //   console.log(`No transactions found for ${routePath}. Initializing new transactions.`);
+  //   savedTransactions[routePath] = [{
+  //     id: Math.floor(Math.random() * 1000000), // Generate a random ID
+  //     text: '',
+  //     projectedCost: 0,
+  //     actualCost: 0
+  //   }];
+  //   localStorage.setItem('transactions', JSON.stringify(savedTransactions));
+  // }
+
+  // // Load transactions for the current route
+  // transactions.value = savedTransactions[routePath];
+  // console.log(`Loaded transactions for ${routePath}:`, transactions.value);
+
+  // Load transactions from the database
+  onValue(reference, (snapshot) => {
+    if (snapshot.exists()) {
+      // Parse the snapshot data (string) into an array since savedTransactions is an object
+      const userData = JSON.parse(snapshot.val()) 
+      // console.log(userData)
+      // console.log(typeof userData)
+      // console.log(savedTransactions)
+      // console.log(typeof savedTransactions)
+
+      // const userDataObject = JSON.parse(userData);
+      // console.log(userDataObject)
+      // console.log(typeof userDataObject)
+
+      savedTransactions = userData; // Use fetched data from the database
+      localStorage.setItem('transactions', JSON.stringify(savedTransactions)); // Save fetched items to localStorage
+      transactions.value = savedTransactions[routePath]; // Use fetched data from the database
+      console.log(`Loaded transactions for ${routePath}:`, transactions.value);
+    }
+    // } else {
+    //   console.log(`No transactions found in the database for ${currentRoute.value.path}. Initializing new transactions.`);
+    //   savedTransactions[routePath] = [{ 
+    //     id: Math.floor(Math.random() * 1000000), // Generate a random ID
+    //     text: '', 
+    //     projectedCost: 0, 
+    //     actualCost: 0 
+    //   }];
+    //   localStorage.setItem('transactions', JSON.stringify(savedTransactions));
+    // }
+
+    // If there are no transactions for the current route, initialize it
+    if (!savedTransactions[routePath]) {
+      console.log(`No transactions found for ${routePath}. Initializing new transactions.`);
+      savedTransactions[routePath] = [{
+        id: Math.floor(Math.random() * 1000000), // Generate a random ID
+        text: '',
+        projectedCost: 0,
+        actualCost: 0
+      }];
+    }
+
+    // Load transactions for the current route
+    transactions.value = savedTransactions[routePath];
+    console.log(`Loaded transactions for ${routePath}:`, transactions.value);
+  });
 }
+
 
 // Load saved data on component mount
 onMounted(() => {
