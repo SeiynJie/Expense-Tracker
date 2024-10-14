@@ -153,6 +153,7 @@ onMounted(() => {
   previousRoute = currentRoute.value.path; // Store the initial route on mount
   loadTransactions();
   loadPageName()
+  saveToLocalStorage()
 });
 
 // Update transactions only if the route changes

@@ -436,7 +436,7 @@ const handleDeletePage = async (currentRoute) => {
 async function writeUserData(transactions, menuItems) {
   // Check if transactions or menuItems are empty and assign default values if needed
   if (!transactions || transactions === 'null' || transactions === 'undefined') {
-    transactions = localStorage.getItem('transactions') || JSON.stringify([]); // Default to an empty array
+    transactions = localStorage.getItem('transactions'); // Default to an empty array
   }
 
   if (!menuItems || menuItems === 'null' || menuItems === 'undefined') {
