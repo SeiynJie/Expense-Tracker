@@ -23,8 +23,8 @@ body {
 
 .container {
   margin: 30px auto;
-  width: 101%; /* Use percentage-based width for responsiveness */
-  max-width: 1200px; /* Limit the maximum width */
+  width: 100%; /* Use percentage-based width for responsiveness */
+  max-width: 2000px; /* Limit the maximum width */
 }
 
 h1 {

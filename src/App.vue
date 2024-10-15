@@ -581,4 +581,13 @@ section {
   gap: 5px;
   /* background-color: #f0f0f0; */
 }
+
+@media (max-width: 750px){
+  main{
+    flex-direction: column;
+  }
+  .sidebar{
+    align-self: center;
+  }
+}
 </style>

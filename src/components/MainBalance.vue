@@ -59,11 +59,12 @@ const handleCurrencyChange = () => {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    text-align: center;
 }
 
 /* Style for the input field */
 .currency-input {
-    font-size: 25px;
+    font-size: 1.5em;
     border: 0.5px solid #bebebe;
     opacity: 1;
     border-radius: 25px;
@@ -74,5 +75,15 @@ const handleCurrencyChange = () => {
     /* Set width to accommodate currency symbols */
     text-align: center;
     /* Center align the text */
+}
+
+
+@media all and (max-width: 600px) {
+    .overallBalance {
+        flex-direction: column; /* Stack elements vertically */
+    }
+    .balanceDiv, .projectedBalance, .actualBalance {
+        margin-bottom: 10%; /* Add spacing between elements */
+    }
 }
 </style>

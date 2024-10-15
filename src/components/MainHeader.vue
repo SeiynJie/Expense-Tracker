@@ -44,40 +44,69 @@ function deletePage() {
 div {
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    margin: 10px 0; /* Add some spacing between elements */
 }
 
 /* Style for the input field */
 .name-input {
-    font-size: 24px;
+    font-size: 1em; /* Use relative font size */
     font-family: 'Roboto', sans-serif;
-    align-self: center;
     border: 0.5px solid #bebebe;
     border-radius: 15px;
     outline: none;
-    width: 50%;
+    width: 30%; /* Adjust width dynamically */
+    min-width: 30%;
+    max-width: 50%; /* Ensure max width */
     height: auto;
-    max-height: 90%;
     text-align: center;
     overflow-wrap: break-word;
-    /* Handle text wrapping */
     white-space: pre-wrap;
-    /* Preserve whitespace and allow wrapping */
     resize: none;
-    /* Disable manual resizing */
+    padding: 10px; /* Add padding for better spacing */
+    box-sizing: border-box; /* Ensure padding doesn't increase width */
 }
 
+/* Style for delete button */
 .deleteButton {
     height: 36px;
     align-self: center;
     margin-left: 10px;
     border-radius: 16px;
     background-color: red;
-    border-color: red;
+    color: white;
+    border: none;
+    padding: 0 15px; /* Adjust padding for better sizing */
+    cursor: pointer; /* Add pointer to indicate it's clickable */
 }
 
-.connfirmDelete {
-    background-color: red;
-    border-color: red;
+.confirmDelete {
+    background-color: darkred;
+    border: none;
+}
+
+/* Media Queries for responsiveness */
+@media (max-width: 1000px) {
+    .name-input {
+        width: 100%; /* Full width on smaller screens */
+    }
+}
+
+@media (max-width: 750px) {
+    div {
+        flex-direction: column; /* Stack elements vertically */
+    }
+    
+    .name-input {
+        font-size: 1.2em; /* Reduce font size for smaller screens */
+        width: 70%; /* Ensure input takes full width */
+    }
+    
+    .deleteButton {
+        width: 52%; /* Full-width button on small screens */
+        margin-top: 10px; /* Add margin for spacing */
+    }
 }
 
 </style>

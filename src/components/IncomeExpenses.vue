@@ -1,20 +1,24 @@
 <template>
   <div class="inc-exp-container">
     <div>
-      <h4>Projected Income</h4>
-      <p class="money plus">+{{ currency }}{{ formatNumber(projectedIncome) }}</p>
+      <h4>Projected Income
+        <p class="money plus">+{{ currency }}{{ formatNumber(projectedIncome) }}</p>
+      </h4>
     </div>
     <div>
-      <h4>P. Expenses</h4>
-      <p class="money minus">{{ currency }}{{ formatNumber(projectedExpenses) }}</p>
+      <h4>P. Expenses
+        <p class="money minus">{{ currency }}{{ formatNumber(projectedExpenses) }}</p>
+      </h4>
     </div>
     <div>
-      <h4>Actual Income</h4>
-      <p class="money plus">+{{ currency }}{{ formatNumber(actualIncome) }}</p>
+      <h4>Actual Income
+        <p class="money plus">+{{ currency }}{{ formatNumber(actualIncome) }}</p>
+      </h4>
     </div>
     <div>
-      <h4>A. Expenses</h4>
-      <p class="money minus">{{ currency }}{{ formatNumber(actualExpenses) }}</p>
+      <h4>A. Expenses
+        <p class="money minus">{{ currency }}{{ formatNumber(actualExpenses) }}</p>
+      </h4>
     </div>
   </div>
 </template>
@@ -50,11 +54,28 @@ defineProps({
 </script>
 
 <style scoped>
-div {
-  display:inline-block;
+
+h4{
+  font-size: .9em;
+}
+
+.inc-exp-container {
+  display:flex;
+  flex-direction: row;
   text-align: left;
   justify-content: space-between;
   align-content: space-between;
-  margin: 12px;
+  margin: 1%;
 }
+
+@media (max-width: 750px){
+  div{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-content: space-between;
+    margin: 12px;
+  }
+}
+
 </style>
